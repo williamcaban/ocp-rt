@@ -49,13 +49,91 @@
 ## Override RHCOS into RHCOS-RT
 - Login to the node to convert into RT node (example using "worker-3"):
     ```
-    slogin core@worker-3
+    # oc debug node/worker-3.ocp4poc.lab.shift.zone
+    Starting pod/worker-3ocp4poclabshiftzone-debug ...
+    To use host binaries, run `chroot /host`
+    Pod IP: 198.18.100.18
+    If you don't see a command prompt, try pressing enter.
 
-    [core@worker-3 ~]$ sudo -i
+    sh-4.2# chroot /host
 
-    [root@worker-3 ~]# curl -s http://198.18.100.1:8000/rhcos-rt.sh | bash
+    sh-4.4# curl -s http://198.18.100.1:8000/rhcos-rt.sh | bash
+    Applying patched microcode_ctl
+    Downloading 'https://fedorapeople.org/~walters/microcode_ctl-20190918-3.rhcos.1.el8.x86_64.rpm'... done!
+    Checking out tree c3df460... done
+    Enabled rpm-md repositories:
+    Importing rpm-md... done
+    Resolving dependencies... done
+    Applying 1 override
+    Processing packages... done
+    Running pre scripts... done
+    Running post scripts... done
+    Running posttrans scripts... done
+    Writing rpmdb... done
+    Writing OSTree commit... done
+    Staging deployment... done
+    Upgraded:
+    microcode_ctl 4:20190618-1.20190918.2.el8_1 -> 4:20190918-3.rhcos.1.el8
+    Run "systemctl reboot" to start a reboot
+    Applying RT Kernel
+    Checking out tree c3df460... done
+    Enabled rpm-md repositories:
+    Importing rpm-md... done
+    Resolving dependencies... done
+    Applying 5 overrides and 3 overlays
+    Processing packages... done
+    Running pre scripts... done
+    Running post scripts... done
+    Running posttrans scripts... done
+    Writing rpmdb... done
+    Generating initramfs... done
+    Writing OSTree commit... done
+    Staging deployment... done
+    Freed: 36.1 MB (pkgcache branches: 2)
+    Upgraded:
+    microcode_ctl 4:20190618-1.20190918.2.el8_1 -> 4:20190918-3.rhcos.1.el8
+    Removed:
+    kernel-4.18.0-147.el8.x86_64
+    kernel-core-4.18.0-147.el8.x86_64
+    kernel-modules-4.18.0-147.el8.x86_64
+    kernel-modules-extra-4.18.0-147.el8.x86_64
+    Added:
+    kernel-rt-core-4.18.0-147.rt24.93.el8.x86_64
+    kernel-rt-modules-4.18.0-147.rt24.93.el8.x86_64
+    kernel-rt-modules-extra-4.18.0-147.rt24.93.el8.x86_64
+    Run "systemctl reboot" to start a reboot
 
-    [root@worker-3 ~]# rpm-ostree status
+    sh-4.4# rpm-ostree status
+    State: idle
+    AutomaticUpdates: disabled
+    Deployments:
+    pivot://registry.svc.ci.openshift.org/ocp/4.3-2019-11-05-194939@sha256:3467568ce4f4cc41f29c1e1eef8c72ed188f940d923e0cb94b705d1599af3123
+                CustomOrigin: Managed by machine-config-operator
+                    Version: 43.81.201911051743.0 (2019-11-05T17:48:00Z)
+                        Diff: 1 upgraded, 4 removed, 3 added
+        RemovedBasePackages: kernel-core kernel-modules kernel kernel-modules-extra 4.18.0-147.el8
+        ReplacedBasePackages: microcode_ctl 4:20190618-1.20190918.2.el8_1 -> 4:20190918-3.rhcos.1.el8
+                LocalPackages: kernel-rt-modules-4.18.0-147.rt24.93.el8.x86_64 kernel-rt-core-4.18.0-147.rt24.93.el8.x86_64 kernel-rt-modules-extra-4.18.0-147.rt24.93.el8.x86_64
+
+    * pivot://registry.svc.ci.openshift.org/ocp/4.3-2019-11-05-194939@sha256:3467568ce4f4cc41f29c1e1eef8c72ed188f940d923e0cb94b705d1599af3123
+                CustomOrigin: Managed by machine-config-operator
+                    Version: 43.81.201911051743.0 (2019-11-05T17:48:00Z)
+
+    pivot://quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:4e5cb300ff5a9bee07685b3fd152cb10f26f386bc89f20aad19c3e8fc0dd704a
+                CustomOrigin: Image generated via coreos-assembler
+                    Version: 42.80.20190828.2 (2019-08-28T13:52:49Z)
+    sh-4.4#
+
+    sh-4.4# systemctl reboot
+    sh-4.4# exit
+    sh-4.2#
+    Removing debug pod ...
+    #
+    ```
+
+- After the reboot the worker should report output similar to:
+    ```
+    sh-4.2# rpm-ostree status
     State: idle
     AutomaticUpdates: disabled
     Deployments:
@@ -66,7 +144,6 @@
         ReplacedBasePackages: microcode_ctl 4:20190618-1.20190918.2.el8_1 -> 4:20190918-3.rhcos.1.el8
             LayeredPackages: kernel-rt-core kernel-rt-modules kernel-rt-modules-extra
 
-    [root@worker-3 ~]# systemctl reboot
     ```
 
 ## Prepare OpenShift for RT worker nodes
