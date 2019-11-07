@@ -71,12 +71,13 @@
 
 ## Prepare OpenShift for RT worker nodes
 
-- Create OCP MCP, Tuned Profiles and MachineConfigs
+- Create OCP MCP, Tuned Profiles, MachineConfigs and KubeletConfigs
     ```
     oc create -f 00-mcp-worker-rt.yaml
     oc create -f 00-tuned-network-latency.yaml
     oc create -f 01-tuned-rt.yaml
     oc create -f 05-mc-rt.yaml
+    oc create -f 05-kubeletconfg-worker-rt.yaml
     ```
 - Apply RT profile profile to a Node
     ```
@@ -123,6 +124,12 @@ Sample setup: 32 cores
 
 *Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, eerything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `--kube-reserved 1 --system-reserved 1`.
 
+kubeReserved:
+
+systemReserved:
+    - cpu: 1000m
+    - memory: 150G
+    - pids: 100
 
 
 
