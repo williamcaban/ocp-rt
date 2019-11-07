@@ -69,4 +69,51 @@
     [root@worker-3 ~]# systemctl reboot
     ```
 
+## Prepare OpenShift for RT worker nodes
+
+- Create OCP MCP, Tuned Profiles and MachineConfigs
+    ```
+    oc create -f 00-mcp-worker-rt.yaml
+    oc create -f 00-tuned-network-latency.yaml
+    oc create -f 01-tuned-rt.yaml
+    oc create -f 05-mc-rt.yaml
+    ```
+- Apply RT profile profile to a Node
+    ```
+    oc label node <node_name> node-role.kubernetes.io/worker-rt=""
+    ```
+- After the MCP is applied the node will reboot
+
+## RHCOS-RT Validations
+- Validate the desired worker node has the desired worker-rt role:
+```
+# oc get nodes
+NAME                              STATUS   ROLES              AGE   VERSION
+master-0.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
+master-1.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
+master-2.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
+worker-0.ocp4poc.exmple.com   Ready    worker             25h   v1.16.2
+worker-1.ocp4poc.exmple.com   Ready    worker             25h   v1.16.2
+worker-3.ocp4poc.exmple.com   Ready    worker,worker-rt   25h   v1.16.2
+```
+
+- Validate the MCP shows the desired machine count:
+```
+ oc get mcp
+NAME        CONFIG                                                UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT
+master      rendered-master-3d75b71ec284fa7d862bfe5f8794a524      True      False      False      3              3                   3                     0
+worker      rendered-worker-ee410243cca84cef5b4c0c8a40681b96      True      False      False      2              2                   2                     0
+worker-rt   rendered-worker-rt-5da79e09ba7db4d27ff50a91f7e5eab6   True      False      False      1              1                   1                     0
+```
+
+- Login into the worker-rt node and validate the correct Kernel arguments have been applied:
+```
+[core@worker-3 ~]$ cat /proc/cmdline
+BOOT_IMAGE=/ostree/rhcos-02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/vmlinuz-4.18.0-147.rt24.93.el8.x86_64 console=tty0 console=ttyS0,115200n8 rootflags=defaults,prjquota rw root=UUID=6101ba79-239a-439e-b891-6315c6c4b7bd ostree=/ostree/boot.1/rhcos/02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/0 coreos.oem.id=metal ignition.platform.id=metal default_hugepagesz=1G hugepagesz=1G hugepages=32 isolcpus=2-24 nohz=on nohz_full=2-24 rcu_nocbs=2-24 nosoftlockup nmi_watchdog=0 audit=0 mce=off kthread_cpus=0 irqaffinity=0 skew_tick=1 processor.max_cstate=1 idle=poll intel_pstate=disable intel_idle.max_cstate=0 intel_iommu=on iommu=pt
+[core@worker-3 ~]$
+```
+
+# Demo RT workload
+
+```WORK IN PROGRESS```
 
