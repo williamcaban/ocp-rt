@@ -1,0 +1,15 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: KubeletConfig
+metadata:
+  name: kubelet-worker-rt 
+spec:
+  machineConfigPoolSelector:
+    matchLabels:
+      node-role.kubernetes.io/worker-rt: ""
+  kubeletConfig: 
+    systemReserved:
+      cpu: 1000m
+      memory: 500Mi
+    kubeReserved:
+      cpu: 1000m
+      memory: 500Mi
