@@ -5,7 +5,7 @@ metadata:
 spec:
   machineConfigPoolSelector:
     matchLabels:
-      node-role.kubernetes.io/worker-rt: ""
+      worker-rt: ""
   kubeletConfig: 
     systemReserved:
       cpu: 1000m

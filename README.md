@@ -131,19 +131,26 @@
     #
     ```
 
-- After the reboot the worker should report output similar to:
+- After the reboot the worker should report output similar to this:
     ```
-    sh-4.2# rpm-ostree status
+    sh-4.4# rpm-ostree status
     State: idle
     AutomaticUpdates: disabled
     Deployments:
-    ● pivot://registry.svc.ci.openshift.org/ocp/4.3-2019-11-05-194939@sha256:3467568ce4f4cc41f29c1e1eef8c72ed188f940d923e0cb94b705d1599af3123
+    * pivot://registry.svc.ci.openshift.org/ocp/4.3-2019-11-05-194939@sha256:3467568ce4f4cc41f29c1e1eef8c72ed188f940d923e0cb94b705d1599af3123
                 CustomOrigin: Managed by machine-config-operator
                     Version: 43.81.201911051743.0 (2019-11-05T17:48:00Z)
         RemovedBasePackages: kernel-core kernel-modules kernel kernel-modules-extra 4.18.0-147.el8
         ReplacedBasePackages: microcode_ctl 4:20190618-1.20190918.2.el8_1 -> 4:20190918-3.rhcos.1.el8
-            LayeredPackages: kernel-rt-core kernel-rt-modules kernel-rt-modules-extra
+                LocalPackages: kernel-rt-modules-4.18.0-147.rt24.93.el8.x86_64 kernel-rt-core-4.18.0-147.rt24.93.el8.x86_64 kernel-rt-modules-extra-4.18.0-147.rt24.93.el8.x86_64
 
+    pivot://registry.svc.ci.openshift.org/ocp/4.3-2019-11-05-194939@sha256:3467568ce4f4cc41f29c1e1eef8c72ed188f940d923e0cb94b705d1599af3123
+                CustomOrigin: Managed by machine-config-operator
+                    Version: 43.81.201911051743.0 (2019-11-05T17:48:00Z)
+    sh-4.4#
+    sh-4.4# uname -a
+    Linux worker-3.ocp4poc.lab.shift.zone 4.18.0-147.rt24.93.el8.x86_64 #1 SMP PREEMPT RT Thu Sep 26 16:48:43 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+    sh-4.4#
     ```
 
 ## Prepare OpenShift for RT worker nodes
@@ -163,26 +170,27 @@
 - After the MCP is applied the node will reboot
 
 ## RHCOS-RT Validations
+
 - Validate the desired worker node has the desired worker-rt role:
-```
-# oc get nodes
-NAME                              STATUS   ROLES              AGE   VERSION
-master-0.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
-master-1.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
-master-2.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
-worker-0.ocp4poc.exmple.com   Ready    worker             25h   v1.16.2
-worker-1.ocp4poc.exmple.com   Ready    worker             25h   v1.16.2
-worker-3.ocp4poc.exmple.com   Ready    worker,worker-rt   25h   v1.16.2
-```
+    ```
+    # oc get nodes
+    NAME                              STATUS   ROLES              AGE   VERSION
+    master-0.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
+    master-1.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
+    master-2.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
+    worker-0.ocp4poc.exmple.com   Ready    worker             25h   v1.16.2
+    worker-1.ocp4poc.exmple.com   Ready    worker             25h   v1.16.2
+    worker-3.ocp4poc.exmple.com   Ready    worker,worker-rt   25h   v1.16.2
+    ```
 
 - Validate the MCP shows the desired machine count:
-```
- oc get mcp
-NAME        CONFIG                                                UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT
-master      rendered-master-3d75b71ec284fa7d862bfe5f8794a524      True      False      False      3              3                   3                     0
-worker      rendered-worker-ee410243cca84cef5b4c0c8a40681b96      True      False      False      2              2                   2                     0
-worker-rt   rendered-worker-rt-5da79e09ba7db4d27ff50a91f7e5eab6   True      False      False      1              1                   1                     0
-```
+    ```
+    oc get mcp
+    NAME        CONFIG                                                UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT
+    master      rendered-master-3d75b71ec284fa7d862bfe5f8794a524      True      False      False      3              3                   3                     0
+    worker      rendered-worker-ee410243cca84cef5b4c0c8a40681b96      True      False      False      2              2                   2                     0
+    worker-rt   rendered-worker-rt-5da79e09ba7db4d27ff50a91f7e5eab6   True      False      False      1              1                   1                     0
+    ```
 
 - Login into the worker-rt node and validate the correct Kernel arguments have been applied:
 ```
