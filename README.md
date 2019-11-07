@@ -117,3 +117,8 @@ BOOT_IMAGE=/ostree/rhcos-02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2
 
 ```WORK IN PROGRESS```
 
+
+
+# Acknowledgements
+
+Thanks to the help from [Colin Walters](https://github.com/cgwalters) and [Yolanda Robla Mota](https://github.com/yrobla)
