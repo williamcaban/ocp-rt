@@ -109,11 +109,22 @@ worker-rt   rendered-worker-rt-5da79e09ba7db4d27ff50a91f7e5eab6   True      Fals
 - Login into the worker-rt node and validate the correct Kernel arguments have been applied:
 ```
 [core@worker-3 ~]$ cat /proc/cmdline
-BOOT_IMAGE=/ostree/rhcos-02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/vmlinuz-4.18.0-147.rt24.93.el8.x86_64 console=tty0 console=ttyS0,115200n8 rootflags=defaults,prjquota rw root=UUID=6101ba79-239a-439e-b891-6315c6c4b7bd ostree=/ostree/boot.1/rhcos/02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/0 coreos.oem.id=metal ignition.platform.id=metal default_hugepagesz=1G hugepagesz=1G hugepages=32 isolcpus=2-24 nohz=on nohz_full=2-24 rcu_nocbs=2-24 nosoftlockup nmi_watchdog=0 audit=0 mce=off kthread_cpus=0 irqaffinity=0 skew_tick=1 processor.max_cstate=1 idle=poll intel_pstate=disable intel_idle.max_cstate=0 intel_iommu=on iommu=pt
+BOOT_IMAGE=/ostree/rhcos-02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/vmlinuz-4.18.0-147.rt24.93.el8.x86_64 console=tty0 console=ttyS0,115200n8 rootflags=defaults,prjquota rw root=UUID=6101ba79-239a-439e-b891-6315c6c4b7bd ostree=/ostree/boot.1/rhcos/02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/0 coreos.oem.id=metal ignition.platform.id=metal default_hugepagesz=1G hugepagesz=1G hugepages=32 nohz=on nosoftlockup nmi_watchdog=0 audit=0 mce=off kthread_cpus=0 irqaffinity=0 skew_tick=1 processor.max_cstate=1 idle=poll intel_pstate=disable intel_idle.max_cstate=0 intel_iommu=on iommu=pt
 [core@worker-3 ~]$
 ```
 
 # Demo RT workload
+
+Sample setup: 32 cores
+- 1 for kubelet
+- 2 for system
+- 4 for cyclitest
+- 25 for stress-ng
+
+*Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, eerything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `--kube-reserved 1 --system-reserved 1`.
+
+
+
 
 ```WORK IN PROGRESS```
 

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress 
+spec:
+  replicas: 25
+  selector:
+    matchLabels:
+      name: stress 
+  template:
+    metadata:
+      labels:
+        name: stress 
+    spec:
+      containers:
+      - name: stress 
+        image: "docker.io/cscojianzhan/stress"
+        resources:
+          limits:
+            memory: "200Mi"
+            cpu: "1"
+          requests:
+            memory: "200Mi"
+            cpu: "1"
+      nodeSelector:
+        node-role.kubernetes.io/worker-rt: ""
+
+#https://github.com/OPENAIRINTERFACE/openair-k8s/blob/master/manifests/cyclictest/stress_pod.yaml

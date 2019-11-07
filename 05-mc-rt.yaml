@@ -9,10 +9,10 @@ spec:
         - default_hugepagesz=1G
         - hugepagesz=1G
         - hugepages=32
-        - isolcpus=2-24
+#        - isolcpus=2-31
         - nohz=on
-        - nohz_full=2-24
-        - rcu_nocbs=2-24
+#        - nohz_full=2-31
+#        - rcu_nocbs=2-31
         - nosoftlockup
         - nmi_watchdog=0
         - audit=0
