@@ -209,7 +209,7 @@
 Sample setup: 32 cores
 - 1 for kubelet
 - 2 for system
-- 4 for cyclitest
+- 4 for cyclictest
 - 25 for stress-ng
 
 *Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, eerything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `--kube-reserved 1 --system-reserved 1`.
