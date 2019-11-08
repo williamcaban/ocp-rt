@@ -283,6 +283,20 @@ Sample setup: 32 cores
     sh-4.4#
     ```
 
+- For longer runtime, for example to setup a test to run for 1 hour modify the environment variable of the cyclictest Pod:
+    ```
+    env:
+      - name: DURATION
+        value: "1h"
+    ```
+    After running, the output for this test will be `/tmp/cyclictest/cyclictest_1h.out`
+    ```
+    sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_1h.out
+    # Min Latencies: 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003
+    # Avg Latencies: 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00004 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003
+    # Max Latencies: 00086 00084 00084 00086 00087 00085 00087 00084 00092 00085 00085 00090 00085 00088 00092 00088 00088 00085 00087 00084 00089 00088 00086 00086 00086 00085 00087 00086 00085 00087 00087 00086
+    ```
+
 # Acknowledgements
 
 Thanks to the help from [Colin Walters](https://github.com/cgwalters) and [Yolanda Robla Mota](https://github.com/yrobla)
