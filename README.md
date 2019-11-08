@@ -8,7 +8,7 @@
 
 ## Setup local web server as RPM and script repos
 
-**NOTE:** Instructions assuming `rhel-8.1-x86_64-dvd-main.iso` is the RHEL DVD with BaseOS and AppStream repos and `rhel-8.1-x86_64-dvd-rt.iso` is the RHEL DVD with the RT repos.
+**NOTE:** Instructions assuming `rhel-8.1-x86_64-dvd-rt.iso` is the ISO image of the RHEL DVD with the RT repos.
 
 - Setup local repo from RHEL-RT 8.1 DVD
     ```
@@ -21,19 +21,6 @@
 
     umount /tmp/RHEL-8.1-RT
     ````
-
-- (optional) Setup local repo from RHEL 8.1 DVD:
-    ```
-    mkdir /tmp/RHEL-8.1
-    mount -o loop,ro /root/rhel-8.1-x86_64-dvd-main.iso /tmp/RHEL-8.1
-
-    mkdir -pv /opt/nginx/html/RHEL-8.1
-    cp -afZ /tmp/RHEL-8.1/. /opt/nginx/html/RHEL-8.1/
-    chcon -R system_u:object_r:httpd_sys_content_t:s0 /opt/nginx/html/RHEL-8.1/
-
-    umount /tmp/RHEL-8.1
-    ```
-
 ## Prepare RHCOS override script
 
 - Edit `rhcos-rt.sh` and set the `WEBROOT_RT` environment variable:
@@ -204,15 +191,15 @@
     sh-4.4#
     ```
 
-# Demo RT workload
+# Tests with Demo RT workload
 
-Sample setup: 16 cores
-- 1 for kubelet
-- 2 for system
-- 4 for cyclictest
-- 9 for stress-ng
+Sample setup for worker-rt node with 16 cores
+- 1c for kubelet
+- 2c for system
+- 4c for cyclictest
+- 9c for stress-ng
 
-*Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, eerything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `--kube-reserved 1 --system-reserved 1`.
+*Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, everything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `kubeReserved`  and `systemReserved`.
 
 
 - Create demo project and prepare to run the `cyclictest`:
@@ -236,7 +223,8 @@ Sample setup: 16 cores
     stress-8554657b94-j5mwb   1/1     Running     0          25s
     stress-8554657b94-s9x4j   1/1     Running     0          25s
     ```
-- Once the `stress` Pods are running (one per core outside cyclictests or reserved cres as per previous example). Proceed to run the `cyclictest` Pod which will run for 10 minutes:
+
+- Once the `stress` Pods are running (one per core outside cyclictests or reserved cores, as per previous example). Proceed to run the `cyclictest` Pod which will run for 10 minutes:
     ```
     $ oc create -f 08-rt-test-cyclictest.yaml
     pod/cyclictest created
@@ -275,17 +263,17 @@ Sample setup: 16 cores
     # Max Latencies: 00077 00078 00082 00077
     ```
 
-    ```NOTE: We are still investigating the Max latency issue as seems to be due to the testing methodology.```
+    ```NOTE: We are still investigating the Max latency results as seems to be due to the testing methodology.```
 
-- For longer runtime, for example to setup a test to run for 1 hour modify the environment variable of the cyclictest Pod:
+- For longer runtime, for example to setup a test to run for 3 hour modify the environment variable of the cyclictest Pod:
     ```
     env:
       - name: DURATION
-        value: "1h"
+        value: "3h"
     ```
     After running, the output for this test will be `/tmp/cyclictest/cyclictest_1h.out`
     ```
-    sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_1h.out
+    sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_3h.out
     # Min Latencies: 00003 00003 00003 00003
     # Avg Latencies: 00004 00003 00003 00003
     # Max Latencies: 000XX 000XX 000XX 000XX
