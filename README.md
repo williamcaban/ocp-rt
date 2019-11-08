@@ -206,11 +206,11 @@
 
 # Demo RT workload
 
-Sample setup: 32 cores
+Sample setup: 16 cores
 - 1 for kubelet
 - 2 for system
 - 4 for cyclictest
-- 25 for stress-ng
+- 9 for stress-ng
 
 *Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, eerything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `--kube-reserved 1 --system-reserved 1`.
 
@@ -226,31 +226,15 @@ Sample setup: 32 cores
 
     # oc get pods
     NAME                      READY   STATUS    RESTARTS   AGE
-    stress-8554657b94-29x5n   1/1     Running   0          27s
-    stress-8554657b94-2cfr6   1/1     Running   0          25s
-    stress-8554657b94-46qjv   1/1     Running   0          26s
-    stress-8554657b94-5x7rk   1/1     Running   0          26s
-    stress-8554657b94-blx6g   1/1     Running   0          25s
-    stress-8554657b94-bw4gw   1/1     Running   0          26s
-    stress-8554657b94-ckfqc   1/1     Running   0          25s
-    stress-8554657b94-crz2n   1/1     Running   0          25s
-    stress-8554657b94-dtdhm   1/1     Running   0          27s
-    stress-8554657b94-jthpm   1/1     Running   0          27s
-    stress-8554657b94-kgvnx   1/1     Running   0          25s
-    stress-8554657b94-l4xs7   1/1     Running   0          26s
-    stress-8554657b94-ld9tj   1/1     Running   0          26s
-    stress-8554657b94-m2nzl   1/1     Running   0          25s
-    stress-8554657b94-mgzqn   1/1     Running   0          26s
-    stress-8554657b94-p8d7v   1/1     Running   0          25s
-    stress-8554657b94-r6wcr   1/1     Running   0          27s
-    stress-8554657b94-rb6n7   1/1     Running   0          25s
-    stress-8554657b94-tczpj   1/1     Running   0          25s
-    stress-8554657b94-tdzwm   1/1     Running   0          26s
-    stress-8554657b94-xnmjf   1/1     Running   0          28s
-    stress-8554657b94-xnp9c   1/1     Running   0          26s
-    stress-8554657b94-xr9st   1/1     Running   0          27s
-    stress-8554657b94-z89sq   1/1     Running   0          25s
-    stress-8554657b94-ztvjk   1/1     Running   0          27s
+    stress-8554657b94-2qk4j   1/1     Running     0          25s
+    stress-8554657b94-6bmjb   1/1     Running     0          25s
+    stress-8554657b94-6k6zh   1/1     Running     0          25s
+    stress-8554657b94-6qzdt   1/1     Running     0          25s
+    stress-8554657b94-bzp6n   1/1     Running     0          25s
+    stress-8554657b94-crzvd   1/1     Running     0          25s
+    stress-8554657b94-fkv5z   1/1     Running     0          25s
+    stress-8554657b94-j5mwb   1/1     Running     0          25s
+    stress-8554657b94-s9x4j   1/1     Running     0          25s
     ```
 - Once the `stress` Pods are running (one per core outside cyclictests or reserved cres as per previous example). Proceed to run the `cyclictest` Pod which will run for 10 minutes:
     ```
@@ -269,6 +253,8 @@ Sample setup: 32 cores
     ```
 
 - The results will be under `/tmp/cyclictest/cyclictest_10m.out` in the corresponding worker node.
+
+    Example with Hyperthreading enabled:
     ```
     $ oc debug node/worker-3.ocp4poc.lab.shift.zone
     Starting pod/worker-3ocp4poclabshiftzone-debug ...
@@ -282,6 +268,14 @@ Sample setup: 32 cores
     # Max Latencies: 00084 00084 00084 00086
     sh-4.4#
     ```
+    Example with Hyperthreading disabled shows a ~9us improvement:
+    ```
+    # Min Latencies: 00003 00003 00003 00003
+    # Avg Latencies: 00003 00003 00003 00003
+    # Max Latencies: 00077 00078 00082 00077
+    ```
+
+    ```NOTE: We are still investigating the Max latency issue as seems to be due to the testing methodology.```
 
 - For longer runtime, for example to setup a test to run for 1 hour modify the environment variable of the cyclictest Pod:
     ```
