@@ -265,7 +265,7 @@ Sample setup for worker-rt node with 16 cores
 
     ```NOTE: We are still investigating the Max latency results as seems to be due to the testing methodology.```
 
-- For longer runtime, for example to setup a test to run for 3 hour modify the environment variable of the cyclictest Pod:
+- For longer runtime, for example to setup a test to run for 3 hours, modify the environment variable `DURATION` in the cyclictest Pod definition:
     ```
     env:
       - name: DURATION
