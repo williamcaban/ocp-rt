@@ -198,11 +198,11 @@
     ```
 
 - Login into the worker-rt node and validate the correct Kernel arguments have been applied:
-```
-[core@worker-3 ~]$ cat /proc/cmdline
-BOOT_IMAGE=/ostree/rhcos-02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/vmlinuz-4.18.0-147.rt24.93.el8.x86_64 console=tty0 console=ttyS0,115200n8 rootflags=defaults,prjquota rw root=UUID=6101ba79-239a-439e-b891-6315c6c4b7bd ostree=/ostree/boot.1/rhcos/02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/0 coreos.oem.id=metal ignition.platform.id=metal default_hugepagesz=1G hugepagesz=1G hugepages=32 nohz=on nosoftlockup nmi_watchdog=0 audit=0 mce=off kthread_cpus=0 irqaffinity=0 skew_tick=1 processor.max_cstate=1 idle=poll intel_pstate=disable intel_idle.max_cstate=0 intel_iommu=on iommu=pt
-[core@worker-3 ~]$
-```
+    ```
+    sh-4.4# cat /proc/cmdline
+    BOOT_IMAGE=/ostree/rhcos-02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/vmlinuz-4.18.0-147.rt24.93.el8.x86_64 console=tty0 console=ttyS0,115200n8 rootflags=defaults,prjquota rw root=UUID=6101ba79-239a-439e-b891-6315c6c4b7bd ostree=/ostree/boot.1/rhcos/02a1645a0b585894d46cfa6462693de7e97d59dbdb14383663019a2f301a62f3/0 coreos.oem.id=metal ignition.platform.id=metal default_hugepagesz=1G hugepagesz=1G hugepages=32 nohz=on nosoftlockup nmi_watchdog=0 audit=0 mce=off kthread_cpus=0 irqaffinity=0 skew_tick=1 processor.max_cstate=1 idle=poll intel_pstate=disable intel_idle.max_cstate=0 intel_iommu=on iommu=pt
+    sh-4.4#
+    ```
 
 # Demo RT workload
 
@@ -214,18 +214,74 @@ Sample setup: 32 cores
 
 *Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, eerything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `--kube-reserved 1 --system-reserved 1`.
 
-kubeReserved:
 
-systemReserved:
-    - cpu: 1000m
-    - memory: 150G
-    - pids: 100
+- Create demo project and prepare to run the `cyclictest`:
+    ```
+    oc create ns demo-rt
+    oc project demo-rt
 
+    oc adm policy add-scc-to-user privileged -z default
 
+    oc create -f 07-rt-stress-ng.yaml
 
-```WORK IN PROGRESS```
+    # oc get pods
+    NAME                      READY   STATUS    RESTARTS   AGE
+    stress-8554657b94-29x5n   1/1     Running   0          27s
+    stress-8554657b94-2cfr6   1/1     Running   0          25s
+    stress-8554657b94-46qjv   1/1     Running   0          26s
+    stress-8554657b94-5x7rk   1/1     Running   0          26s
+    stress-8554657b94-blx6g   1/1     Running   0          25s
+    stress-8554657b94-bw4gw   1/1     Running   0          26s
+    stress-8554657b94-ckfqc   1/1     Running   0          25s
+    stress-8554657b94-crz2n   1/1     Running   0          25s
+    stress-8554657b94-dtdhm   1/1     Running   0          27s
+    stress-8554657b94-jthpm   1/1     Running   0          27s
+    stress-8554657b94-kgvnx   1/1     Running   0          25s
+    stress-8554657b94-l4xs7   1/1     Running   0          26s
+    stress-8554657b94-ld9tj   1/1     Running   0          26s
+    stress-8554657b94-m2nzl   1/1     Running   0          25s
+    stress-8554657b94-mgzqn   1/1     Running   0          26s
+    stress-8554657b94-p8d7v   1/1     Running   0          25s
+    stress-8554657b94-r6wcr   1/1     Running   0          27s
+    stress-8554657b94-rb6n7   1/1     Running   0          25s
+    stress-8554657b94-tczpj   1/1     Running   0          25s
+    stress-8554657b94-tdzwm   1/1     Running   0          26s
+    stress-8554657b94-xnmjf   1/1     Running   0          28s
+    stress-8554657b94-xnp9c   1/1     Running   0          26s
+    stress-8554657b94-xr9st   1/1     Running   0          27s
+    stress-8554657b94-z89sq   1/1     Running   0          25s
+    stress-8554657b94-ztvjk   1/1     Running   0          27s
+    ```
+- Once the `stress` Pods are running (one per core outside cyclictests or reserved cres as per previous example). Proceed to run the `cyclictest` Pod which will run for 10 minutes:
+    ```
+    $ oc create -f 08-rt-test-cyclictest.yaml
+    pod/cyclictest created
+    $ oc get pods cyclictest
+    NAME         READY   STATUS    RESTARTS   AGE
+    cyclictest   1/1     Running   0          19s
+    ```
 
+- After 10 minutes validate the container is in `Completed` state.
+    ```
+    $ oc get pods cyclictest
+    NAME         READY   STATUS      RESTARTS   AGE
+    cyclictest   0/1     Completed   0          11m
+    ```
 
+- The results will be under `/tmp/cyclictest/cyclictest_10m.out` in the corresponding worker node.
+    ```
+    $ oc debug node/worker-3.ocp4poc.lab.shift.zone
+    Starting pod/worker-3ocp4poclabshiftzone-debug ...
+    To use host binaries, run `chroot /host`
+    Pod IP: 198.18.100.18
+    If you don't see a command prompt, try pressing enter.
+    sh-4.2# chroot /host
+    sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_10m.out
+    # Min Latencies: 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003
+    # Avg Latencies: 00003 00003 00003 00003 00003 00003 00003 00004 00004 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00003 00004 00003 00003 00003 00003 00003 00003 00003 00003 00003
+    # Max Latencies: 00083 00085 00086 00088 00085 00084 00083 00089 00087 00086 00086 00084 00083 00084 00084 00085 00086 00086 00087 00084 00087 00087 00087 00083 00086 00086 00084 00086 00087 00087 00087 00083
+    sh-4.4#
+    ```
 
 # Acknowledgements
 

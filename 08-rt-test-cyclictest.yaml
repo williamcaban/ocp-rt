@@ -18,6 +18,7 @@ spec:
     - name: DURATION
       value: "10m"
     securityContext:
+      privileged: true
       capabilities:
         add:
           - SYS_NICE
