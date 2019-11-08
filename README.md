@@ -166,7 +166,7 @@
 - Validate the desired worker node has the desired worker-rt role:
     ```
     # oc get nodes
-    NAME                              STATUS   ROLES              AGE   VERSION
+    NAME                          STATUS   ROLES              AGE   VERSION
     master-0.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
     master-1.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
     master-2.ocp4poc.exmple.com   Ready    master,worker      25h   v1.16.2
