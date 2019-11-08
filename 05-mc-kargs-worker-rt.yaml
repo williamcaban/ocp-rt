@@ -3,16 +3,16 @@ kind: MachineConfig
 metadata:
     labels:
         machineconfiguration.openshift.io/role: worker-rt
-    name: 50-kargs-worker-rt
+    name: 10-kargs-worker-rt
 spec:
     kernelArguments:
         - default_hugepagesz=1G
         - hugepagesz=1G
         - hugepages=32
-#        - isolcpus=2-31
+#        - isolcpus=2-15
         - nohz=on
-#        - nohz_full=2-31
-#        - rcu_nocbs=2-31
+#        - nohz_full=2-15
+#        - rcu_nocbs=2-15
         - nosoftlockup
         - nmi_watchdog=0
         - audit=0

@@ -147,7 +147,7 @@
     oc create -f 00-mcp-worker-rt.yaml
     oc create -f 00-tuned-network-latency.yaml
     oc create -f 01-tuned-rt.yaml
-    oc create -f 05-mc-rt.yaml
+    oc create -f 05-mc-kargs-worker-rt.yaml
     oc create -f 05-kubeletconfig-worker-rt.yaml
     ```
 - **NOTE:** Due to a bug, for now we need to label the `worker` MCP to receive the KubeletConfig so that `worker-rt` can have it
