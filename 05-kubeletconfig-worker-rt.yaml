@@ -13,3 +13,6 @@ spec:
     kubeReserved:
       cpu: 1000m
       memory: 500Mi
+    cpuManagerPolicy: static
+
+# options: https://github.com/kubernetes/kubernetes/blob/release-1.14/pkg/kubelet/apis/config/types.go#L62
