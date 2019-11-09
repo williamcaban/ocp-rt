@@ -142,20 +142,27 @@
 
 ## Prepare OpenShift for RT worker nodes
 
-- Create OCP MCP, Tuned Profiles, MachineConfigs and KubeletConfigs
+- Create MachineConfigPool (MCP) for `worker-rt` and the Tuned profiles:
     ```
     oc create -f 00-mcp-worker-rt.yaml
     oc create -f 00-tuned-network-latency.yaml
     oc create -f 01-tuned-rt.yaml
-    oc create -f 05-mc-kargs-worker-rt.yaml
-    oc create -f 05-kubeletconfig-worker-rt.yaml
     ```
-- **NOTE:** Due to a bug, for now we need to label the `worker` MCP to receive the KubeletConfig so that `worker-rt` can have it
+
+- Assign the `worker-rt` label to the MCP
+
+    **NOTE:** *Due to a bug, for now we need to label the `worker` MCP to receive the KubeletConfig so that `worker-rt` can have it. Once the bug is fixed only the `worker-rt` MCP should be labeled.*
     ```
     oc label machineconfigpool worker worker-rt=""
     ```
 
-- Apply RT profile profile to a Node
+- Create the MachineConfig with the `kernelArguments` for the real-time Nodes. Create `KubeletConfigs` to setup kubelet parameters optimized for the real-time workload
+    ```
+    oc create -f 05-mc-kargs-worker-rt.yaml
+    oc create -f 05-kubeletconfig-worker-rt.yaml
+    ```
+
+- Label the Node to use the new MCP to apply the RT role
     ```
     oc label node <node_name> node-role.kubernetes.io/worker-rt=""
     ```
@@ -193,19 +200,18 @@
 
 # Tests with Demo RT workload
 
-Sample setup for worker-rt node with 16 cores
+Sample setup for worker-rt node with 16 cores:
 - 1c for kubelet
 - 2c for system
 - 4c for cyclictest
 - 9c for stress-ng
 
-*Note on `isolcpus`:* The `isolcpus` is good if every workload on the worker is defined using guaranteed class. Otherwise, everything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior by using the Kubelet flags `kubeReserved`  and `systemReserved`.
+***Note on `isolcpus`:*** The `isolcpus` Kernel parameter is good if every workload on the worker is defined using guaranteed class. Otherwise, everything goes to the non-isolated cores and the performance drop. For this reason, these tests do not use `isolcpus` and instead rely on CPU Manager for the proper behavior. For this it uses the Kubelet flags `kubeReserved`  and `systemReserved`.
 
 
 - Create demo project and prepare to run the `cyclictest`:
     ```
-    oc create ns demo-rt
-    oc project demo-rt
+    oc new-project demo-rt
 
     oc adm policy add-scc-to-user privileged -z default
 
@@ -265,18 +271,20 @@ Sample setup for worker-rt node with 16 cores
 
     ```NOTE: We are still investigating the Max latency results as seems to be due to the testing methodology.```
 
-- For longer runtime, for example to setup a test to run for 3 hours, modify the environment variable `DURATION` in the cyclictest Pod definition:
+- For tests with longer runtime, modify the environment variable `DURATION` in the cyclictest `Pod` definition:
+  
+    Setup to run `cyclictest` for 12 hours
     ```
     env:
       - name: DURATION
-        value: "3h"
+        value: "12h"
     ```
-    After running, the output for this test will be `/tmp/cyclictest/cyclictest_1h.out`
+    After running for the specified amount of time, the output for the test will be at `/tmp/cyclictest/cyclictest_12h.out` in the Node that executed it:
     ```
-    sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_3h.out
-    # Min Latencies: 00003 00003 00003 00003
-    # Avg Latencies: 00004 00003 00003 00003
-    # Max Latencies: 000XX 000XX 000XX 000XX
+    sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_12h.out
+    # Min Latencies: 00002 00002 00002 00002
+    # Avg Latencies: 00002 00002 00003 00002
+    ...
     ```
 
 # Acknowledgements
