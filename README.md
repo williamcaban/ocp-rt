@@ -287,6 +287,34 @@ Sample setup for worker-rt node with 16 cores:
     ...
     ```
 
+## Swap in an updated RT kernel
+
+If you've already applied an override to use the RT kernel, and you want to test a *different* RT kernel, starting from a situation like this where I've downloaded build `-154`, and want to switch to `-155`:
+
+```
+[root@coreos ~]# rpm-ostree status -b
+State: idle
+AutomaticUpdates: disabled
+BootedDeployment:
+* ostree://6c766806a9edd0023f230cccd14f4f2fe4fdd0149fb64b14ed8c6552397f098f
+                   Version: 43.81.201911262047.0 (2019-11-26T20:49:55Z)
+       RemovedBasePackages: kernel-core kernel-modules kernel kernel-modules-extra 4.18.0-147.0.3.el8_1
+      ReplacedBasePackages: microcode_ctl 4:20190618-1.20191112.1.el8_1 -> 4:20190918-3.rhcos.1.el8
+             LocalPackages: kernel-rt-core-4.18.0-154.rt13.11.el8.x86_64 kernel-rt-modules-extra-4.18.0-154.rt13.11.el8.x86_64 kernel-rt-modules-4.18.0-154.rt13.11.el8.x86_64
+[root@coreos ~]# ll
+total 107952
+-rw-r--r--. 1 root root 27130748 Nov 27 15:49 kernel-rt-core-4.18.0-154.rt13.11.el8.x86_64.rpm
+-rw-r--r--. 1 root root 27255152 Nov 27 16:01 kernel-rt-core-4.18.0-155.rt13.12.el8.x86_64.rpm
+-rw-r--r--. 1 root root 23889456 Nov 27 15:49 kernel-rt-modules-4.18.0-154.rt13.11.el8.x86_64.rpm
+-rw-r--r--. 1 root root 23937384 Nov 27 16:01 kernel-rt-modules-4.18.0-155.rt13.12.el8.x86_64.rpm
+-rw-r--r--. 1 root root  3063840 Nov 27 15:49 kernel-rt-modules-extra-4.18.0-154.rt13.11.el8.x86_64.rpm
+-rw-r--r--. 1 root root  3113340 Nov 27 16:01 kernel-rt-modules-extra-4.18.0-155.rt13.12.el8.x86_64.rpm
+-rw-r--r--. 1 root root  2130352 Nov 27 15:54 microcode_ctl-20190918-3.rhcos.1.el8.x86_64.rpm
+[root@coreos ~]# rpm-ostree uninstall kernel-rt-{core,modules,modules-extra} --install kernel-rt-core-4.18.0-155.rt13.12.el8.x86_64.rpm --install kernel-rt-modules-4.18.0-155.rt13.12.el8.x86_64.rpm  --install kernel-rt-modules-extra-4.18.0-155.rt13.12.el8.x86_64.rpm 
+```
+
+Note here we're telling rpm-ostree to uninstall the previous overlay packages, then follow a similar command line invocation to switch to `-155` all as part of one transaction.
+
 # Acknowledgements
 
 Thanks to the help from [Colin Walters](https://github.com/cgwalters) and [Yolanda Robla Mota](https://github.com/yrobla)
