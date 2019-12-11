@@ -34,6 +34,10 @@
     ```
 
 ## Override RHCOS into RHCOS-RT
+
+NOTE1: Version of RHCOS 4.3 from December 2019 and later might not need patching the `microcode_ctl`.
+NOTE2: Upgrade `rhcos-rt.sh` script to match the latest Kernel RT rpms.
+
 - Login to the node to convert into RT node (example using "worker-3"):
     ```
     # oc debug node/worker-3.ocp4poc.lab.shift.zone
@@ -259,17 +263,17 @@ Sample setup for worker-rt node with 16 cores:
     sh-4.4# grep Latencies /tmp/cyclictest/cyclictest_10m.out
     # Min Latencies: 00003 00003 00003 00003
     # Avg Latencies: 00004 00003 00003 00003
-    # Max Latencies: 00084 00084 00084 00086
+    # Max Latencies: 00020 00022 00021 00020
     sh-4.4#
     ```
     Example with Hyperthreading disabled shows a ~9us improvement:
     ```
     # Min Latencies: 00003 00003 00003 00003
     # Avg Latencies: 00003 00003 00003 00003
-    # Max Latencies: 00077 00078 00082 00077
+    # Max Latencies: 00013 00013 00012 00012
     ```
 
-    ```NOTE: We are still investigating the Max latency results as seems to be due to the testing methodology.```
+    ```NOTE: In certain Linux 4.x Kernels we noticed a high Max latency. That has been fixed in recent Kernel builds.```
 
 - For tests with longer runtime, modify the environment variable `DURATION` in the cyclictest `Pod` definition:
   
